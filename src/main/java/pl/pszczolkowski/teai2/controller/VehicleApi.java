@@ -2,6 +2,8 @@ package pl.pszczolkowski.teai2.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/vehicles")
+@CrossOrigin(origins = "http://localhost:4200")
 public class VehicleApi {
 
 
@@ -24,10 +27,7 @@ public class VehicleApi {
         this.vehicleService = vehicleService;
     }
 
-    @GetMapping(produces = {
-            MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE
-            })
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<List<Vehicle>> getVehicles(){
         List<Vehicle> allVehicles = vehicleService.getAllVehicles();
         return new ResponseEntity<>(allVehicles, HttpStatus.OK);
@@ -86,7 +86,7 @@ public class VehicleApi {
     public ResponseEntity<Vehicle> deleteVehicleById(@RequestParam long id){
         Optional<Vehicle> first = vehicleService.findById(id);
         if (first.isPresent()){
-            vehicleService.getAllVehicles().remove(first);
+            vehicleService.getAllVehicles().remove(first.get());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

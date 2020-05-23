@@ -1,5 +1,7 @@
 package pl.pszczolkowski.teai2.service;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import pl.pszczolkowski.teai2.model.Vehicle;
 
@@ -11,8 +13,10 @@ import java.util.stream.Collectors;
 @Service
 public class VehicleServiceImpl implements VehicleService {
 
+    List<Vehicle> vehicleList = new ArrayList<>();
+
+    @EventListener(ApplicationReadyEvent.class)
     private List<Vehicle> createListOfCars(){
-        List<Vehicle> vehicleList = new ArrayList<>();
         vehicleList.add(new Vehicle(1L, "BMW", "E36", "RED"));
         vehicleList.add(new Vehicle(2L, "Fiat", "126p", "BLUE"));
         vehicleList.add(new Vehicle(3L, "Kia", "Ceed", "GREY"));
@@ -22,7 +26,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public List<Vehicle> getAllVehicles() {
-        return createListOfCars();
+        return vehicleList;
     }
 
     @Override
@@ -32,7 +36,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public List<Vehicle> getVehicleByColorSer(String color) {
-        return createListOfCars()
+        return vehicleList
                 .stream()
                 .filter(vehicle -> vehicle.getColor().equals(color))
                 .collect(Collectors.toList());
@@ -40,7 +44,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public void addVehicleSer(Vehicle vehicle) {
-        createListOfCars().add(vehicle);
+        vehicleList.add(vehicle);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Optional<Vehicle> findById(long id) {
-        return createListOfCars()
+        return vehicleList
                 .stream()
                 .filter(vehicle -> vehicle.getId() == id)
                 .findFirst();

@@ -2,7 +2,7 @@ package pl.pszczolkowski.teai2.model;
 
 import org.springframework.hateoas.RepresentationModel;
 
-public class Vehicle extends RepresentationModel<Vehicle> {
+public class Vehicle {
     private long id;
     private String mark;
     private String model;
