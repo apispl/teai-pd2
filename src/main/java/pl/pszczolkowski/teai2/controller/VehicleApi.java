@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/vehicles")
-//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "https://vehicles-angular.herokuapp.com/")
 public class VehicleApi {
 
 
