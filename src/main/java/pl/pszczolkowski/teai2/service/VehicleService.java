@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface VehicleService {
+    List<Vehicle> createListOfCars();
     List<Vehicle> getAllVehicles();
     Optional<Vehicle> getVehicleByIdSer(long id);
     List<Vehicle> getVehicleByColorSer(String color);

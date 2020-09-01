@@ -15,8 +15,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     List<Vehicle> vehicleList = new ArrayList<>();
 
-    @EventListener(ApplicationReadyEvent.class)
-    private List<Vehicle> createListOfCars(){
+    public List<Vehicle> createListOfCars(){
         vehicleList.add(new Vehicle(1L, "BMW", "E36", "RED"));
         vehicleList.add(new Vehicle(2L, "Fiat", "126p", "BLUE"));
         vehicleList.add(new Vehicle(3L, "Kia", "Ceed", "GREY"));

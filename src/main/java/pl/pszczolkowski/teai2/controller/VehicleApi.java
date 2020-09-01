@@ -16,7 +16,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/vehicles")
-@CrossOrigin("*")
 public class VehicleApi {
 
 
@@ -25,17 +24,16 @@ public class VehicleApi {
     @Autowired
     public VehicleApi(VehicleService vehicleService) {
         this.vehicleService = vehicleService;
+        this.vehicleService.createListOfCars();
     }
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<Vehicle>> getVehicles(){
-        List<Vehicle> allVehicles = vehicleService.getAllVehicles();
-        return new ResponseEntity<>(allVehicles, HttpStatus.OK);
+    public List<Vehicle> getVehicles(){
+        return vehicleService.getAllVehicles();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Vehicle> getVehicleById(@PathVariable long id){
-//        Link link = linkTo(VehicleApi.class).slash(id).withSelfRel();
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, path = "/{id}")
+    public ResponseEntity<Vehicle> getVehicleById(@PathVariable("id") long id){
         Optional<Vehicle> vehicleById = vehicleService.getVehicleByIdSer(id);
         if (vehicleById.isPresent()){
             return new ResponseEntity<>(vehicleById.get(), HttpStatus.OK);
