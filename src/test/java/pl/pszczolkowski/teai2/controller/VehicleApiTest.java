@@ -1,5 +1,7 @@
 package pl.pszczolkowski.teai2.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.pszczolkowski.teai2.model.Vehicle;
 import pl.pszczolkowski.teai2.service.VehicleService;
@@ -27,57 +30,100 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class VehicleApiTest {
 
-    @MockBean
-    private VehicleService vehicleService;
     @Autowired
     private MockMvc mockMvc;
-    List<Vehicle> vehicles;
-
-    @Before
-    public void setUp() {
-        vehicles = new ArrayList<>();
-        vehicles.add(new Vehicle(1L, "BMW", "E36", "RED"));
-        vehicles.add(new Vehicle(2L, "Fiat", "126p", "BLUE"));
-        vehicles.add(new Vehicle(3L, "Kia", "Ceed", "GREY"));
-        vehicles.add(new Vehicle(4L, "BMW", "E90", "RED"));
-    }
+    @Autowired
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void contexLoads() {
         assertThat(mockMvc).isNotNull();
-        assertThat(vehicleService).isNotNull();
+        assertThat(objectMapper).isNotNull();
     }
 
     @Test
     void getVehiclesListTest() throws Exception {
-        when(vehicleService.getAllVehicles()).thenReturn(vehicles);
-
         mockMvc.perform(get("/vehicles"))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(4)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].mark", Is.is("BMW")));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[0].mark", Is.is("BMW")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[1].mark", Is.is("Fiat")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.[2].mark", Is.is("Kia")));
     }
 
     @Test
-    void shouldGetVehicleByColorTest() throws Exception {
-        mockMvc.perform(get("/vehicles/color/RED"))
+    void getVehicleByIdTest() throws Exception {
+        mockMvc.perform(get("/vehicles/{id}", 2))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(vehicleService.getVehicleByColorSer("RED").size())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Is.is(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mark", Is.is("Fiat")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.model", Is.is("126p")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.color", Is.is("BLUE")));
+
     }
 
     @Test
-    void addVehicle() {
+    void getVehicleByColorTest() throws Exception {
+        mockMvc.perform(get("/vehicles/colors/{color}", "RED"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$", hasSize(2)));
     }
 
     @Test
-    void modifyById() {
+    void addVehicleTest() throws Exception {
+        Vehicle vehicle = new Vehicle(5, "Lamborghini", "X", "BLACK");
+        String jsonRequest = objectMapper.writeValueAsString(vehicle);
+        mockMvc.perform(MockMvcRequestBuilders.post("/vehicles")
+                .content(jsonRequest)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Is.is(5)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mark", Is.is("Lamborghini")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.model", Is.is("X")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.color", Is.is("BLACK")));
     }
 
     @Test
-    void modifyByIdOneParam() {
+    void modifyByIdTest() throws Exception {
+        Vehicle vehicle = new Vehicle(3, "Lamborghini", "X", "BLACK");
+        String jsonRequest = objectMapper.writeValueAsString(vehicle);
+        mockMvc.perform(MockMvcRequestBuilders.put("/vehicles")
+                .param("id", "3")
+                .content(jsonRequest)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Is.is(3)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mark", Is.is("Lamborghini")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.model", Is.is("X")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.color", Is.is("BLACK")));
     }
 
     @Test
-    void deleteVehicleById() {
+    void modifyByIdOneParamTest() throws Exception {
+        Vehicle vehicle = new Vehicle(3, "Lamborghini", "X", "BLACK");
+        String jsonRequest = objectMapper.writeValueAsString(vehicle);
+        mockMvc.perform(MockMvcRequestBuilders.patch("/vehicles")
+                .param("id", "3")
+                .content(jsonRequest)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Is.is(3)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.mark", Is.is("Lamborghini")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.model", Is.is("X")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.color", Is.is("BLACK")));
+    }
+
+    @Test
+    void deleteVehicleByIdTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/vehicles")
+                .param("id", "4"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void notDeleteVehicleByIdTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/vehicles")
+                .param("id", "5"))
+                .andExpect(status().isNotFound());
     }
 }
